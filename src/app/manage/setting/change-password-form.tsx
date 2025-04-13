@@ -11,8 +11,16 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useChangePasswordMutation } from "@/app/queries/useAccount";
+import { toast } from "sonner";
+import {
+  handleErrorApi,
+  setAccessTokenToLocalStorage,
+  setRefreshTokenToLocalStorage,
+} from "@/lib/utils";
 
 export default function ChangePasswordForm() {
+  const changePasswordMutation = useChangePasswordMutation();
   const form = useForm<ChangePasswordBodyType>({
     resolver: zodResolver(ChangePasswordBody),
     defaultValues: {
@@ -22,11 +30,34 @@ export default function ChangePasswordForm() {
     },
   });
 
+  const reset = () => {
+    form.reset();
+  };
+
+  const onSubmit = async (data: ChangePasswordBodyType) => {
+    if (changePasswordMutation.isPending) return;
+    try {
+      const result = await changePasswordMutation.mutateAsync(data);
+      setAccessTokenToLocalStorage(result.payload.data.accessToken);
+      setRefreshTokenToLocalStorage(result.payload.data.refreshToken);
+      toast("Thành công", {
+        description: result.payload.message,
+      });
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
+    }
+  };
+
   return (
     <Form {...form}>
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onReset={reset}
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
           <CardHeader>
@@ -42,6 +73,7 @@ export default function ChangePasswordForm() {
                     <div className="grid gap-3">
                       <Label htmlFor="oldPassword">Mật khẩu cũ</Label>
                       <Input
+                        autoComplete="current-password"
                         id="oldPassword"
                         type="password"
                         className="w-full"
@@ -60,6 +92,7 @@ export default function ChangePasswordForm() {
                     <div className="grid gap-3">
                       <Label htmlFor="password">Mật khẩu mới</Label>
                       <Input
+                        autoComplete="new-password"
                         id="password"
                         type="password"
                         className="w-full"
@@ -80,6 +113,7 @@ export default function ChangePasswordForm() {
                         Nhập lại mật khẩu mới
                       </Label>
                       <Input
+                        autoComplete="new-password"
                         id="confirmPassword"
                         type="password"
                         className="w-full"
@@ -91,10 +125,12 @@ export default function ChangePasswordForm() {
                 )}
               />
               <div className=" items-center gap-2 md:ml-auto flex">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" type="reset">
                   Hủy
                 </Button>
-                <Button size="sm">Lưu thông tin</Button>
+                <Button size="sm" type="submit">
+                  Lưu thông tin
+                </Button>
               </div>
             </div>
           </CardContent>
