@@ -7,13 +7,18 @@ import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLoginMutation } from "@/app/queries/useAuth";
+import { useLoginMutation } from "@/queries/useAuth";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAppContext } from "@/components/app-provider";
+import { useEffect } from "react";
 
 export default function LoginForm() {
   const loginMutation = useLoginMutation();
+  const searchParams = useSearchParams();
+  const clearTokens = searchParams.get("clearTokens");
+  const { setIsAuth } = useAppContext();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -21,7 +26,11 @@ export default function LoginForm() {
       password: "",
     },
   });
-
+  useEffect(() => {
+    if (clearTokens) {
+      setIsAuth(false);
+    }
+  }, [clearTokens, setIsAuth]);
   const router = useRouter();
   const onSubmit = async (data: LoginBodyType) => {
     if (loginMutation.isPending) return;
@@ -30,6 +39,7 @@ export default function LoginForm() {
       toast("Thành công", {
         description: result.payload.message,
       });
+      setIsAuth(true);
       router.push("/manage/dashboard");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

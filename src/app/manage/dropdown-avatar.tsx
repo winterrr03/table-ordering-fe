@@ -10,20 +10,23 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useLogoutMutation } from "@/app/queries/useAuth";
+import { useLogoutMutation } from "@/queries/useAuth";
 import { useRouter } from "next/navigation";
 import { handleErrorApi } from "@/lib/utils";
-import { useAccountMe } from "@/app/queries/useAccount";
+import { useAccountMe } from "@/queries/useAccount";
+import { useAppContext } from "@/components/app-provider";
 
 export default function DropdownAvatar() {
   const logoutMutation = useLogoutMutation();
   const router = useRouter();
+  const { setIsAuth } = useAppContext();
   const { data } = useAccountMe();
   const account = data?.payload.data;
   const logout = async () => {
     if (logoutMutation.isPending) return;
     try {
       await logoutMutation.mutateAsync();
+      setIsAuth(false);
       router.push("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

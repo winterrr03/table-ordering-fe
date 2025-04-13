@@ -13,8 +13,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useAccountMe, useUpdateMeMutation } from "@/app/queries/useAccount";
-import { useUploadMediaMutation } from "@/app/queries/useMedia";
+import { useAccountMe, useUpdateMeMutation } from "@/queries/useAccount";
+import { useUploadMediaMutation } from "@/queries/useMedia";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
 

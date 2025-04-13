@@ -11,7 +11,7 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { useChangePasswordMutation } from "@/app/queries/useAccount";
+import { useChangePasswordMutation } from "@/queries/useAccount";
 import { toast } from "sonner";
 import {
   handleErrorApi,
