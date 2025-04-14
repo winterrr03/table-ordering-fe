@@ -28,7 +28,6 @@ export default function DropdownAvatar() {
       await logoutMutation.mutateAsync();
       setIsAuth(false);
       router.push("/");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       handleErrorApi({
         error,

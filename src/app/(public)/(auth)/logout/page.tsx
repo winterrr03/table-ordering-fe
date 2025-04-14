@@ -7,16 +7,15 @@ import {
 } from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 
-export default function LogoutPage() {
+function Logout() {
   const { mutateAsync } = useLogoutMutation();
   const router = useRouter();
   const { setIsAuth } = useAppContext();
   const searchParams = useSearchParams();
   const refreshTokenFromUrl = searchParams.get("refreshToken");
   const accessTokenFromUrl = searchParams.get("accessToken");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ref = useRef<any>(null);
   useEffect(() => {
     if (
@@ -27,7 +26,6 @@ export default function LogoutPage() {
           accessTokenFromUrl === getAccessTokenFromLocalStorage()))
     ) {
       ref.current = mutateAsync;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       mutateAsync().then((res) => {
         setTimeout(() => {
           ref.current = null;
@@ -40,4 +38,12 @@ export default function LogoutPage() {
     }
   }, [mutateAsync, router, refreshTokenFromUrl, accessTokenFromUrl, setIsAuth]);
   return <div>Log out....</div>;
+}
+
+export default function LogoutPage() {
+  return (
+    <Suspense>
+      <Logout />
+    </Suspense>
+  );
 }

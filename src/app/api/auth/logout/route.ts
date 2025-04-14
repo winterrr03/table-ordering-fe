@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import authApiRequest from "@/apiRequests/auth";
 import { cookies } from "next/headers";
 

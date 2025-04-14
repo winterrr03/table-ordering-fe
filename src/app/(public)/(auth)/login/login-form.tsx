@@ -41,7 +41,6 @@ export default function LoginForm() {
       });
       setIsAuth(true);
       router.push("/manage/dashboard");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       handleErrorApi({
         error,

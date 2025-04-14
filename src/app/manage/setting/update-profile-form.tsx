@@ -105,7 +105,6 @@ export default function UpdateProfileForm() {
               <FormField
                 control={form.control}
                 name="avatar"
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2 items-start justify-start">
@@ -124,6 +123,7 @@ export default function UpdateProfileForm() {
                           const file = e.target.files?.[0];
                           if (file) {
                             setFile(file);
+                            field.onChange(previewAvatar);
                           }
                         }}
                       />

@@ -43,7 +43,6 @@ export async function PATCH(request: Request) {
       expires: decodedRefreshToken.exp * 1000,
     });
     return Response.json(payload);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return Response.json(
       {

@@ -25,7 +25,6 @@ const queryClient = new QueryClient({
 
 const AppContext = createContext({
   isAuth: false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setIsAuth: (isAuth: boolean) => {},
 });
 

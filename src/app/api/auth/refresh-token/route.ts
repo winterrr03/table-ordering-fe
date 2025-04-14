@@ -2,7 +2,6 @@ import authApiRequest from "@/apiRequests/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
@@ -42,7 +41,6 @@ export async function POST(request: Request) {
       expires: decodedRefreshToken.exp * 1000,
     });
     return Response.json(payload);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return Response.json(
       {
