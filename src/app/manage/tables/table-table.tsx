@@ -32,7 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -44,100 +43,75 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  formatCurrency,
-  getVietnameseDishStatus,
-  handleErrorApi,
-} from "@/lib/utils";
+import { getVietnameseTableStatus, handleErrorApi } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
-import { DishListResType } from "@/schemaValidations/dish.schema";
-import EditDish from "@/app/manage/dishes/edit-dish";
-import AddDish from "@/app/manage/dishes/add-dish";
-import DOMPurify from "dompurify";
-import { useDeleteDishMutation, useDishListQuery } from "@/queries/useDish";
+import { TableListResType } from "@/schemaValidations/table.schema";
+import EditTable from "@/app/manage/tables/edit-table";
+import AddTable from "@/app/manage/tables/add-table";
+import { useDeleteTableMutation, useTableListQuery } from "@/queries/useTable";
 import { toast } from "sonner";
 
-type DishItem = DishListResType["data"][0];
+type TableItem = TableListResType["data"][0];
 
-const DishTableContext = createContext<{
-  setDishIdEdit: (value: string) => void;
-  dishIdEdit: string | undefined;
-  dishDelete: DishItem | null;
-  setDishDelete: (value: DishItem | null) => void;
+const TableTableContext = createContext<{
+  setTableIdEdit: (value: string) => void;
+  tableIdEdit: string | undefined;
+  tableDelete: TableItem | null;
+  setTableDelete: (value: TableItem | null) => void;
 }>({
-  setDishIdEdit: (value: string | undefined) => {},
-  dishIdEdit: undefined,
-  dishDelete: null,
-  setDishDelete: (value: DishItem | null) => {},
+  setTableIdEdit: (value: string | undefined) => {},
+  tableIdEdit: undefined,
+  tableDelete: null,
+  setTableDelete: (value: TableItem | null) => {},
 });
 
-export const columns: ColumnDef<DishItem>[] = [
+export const columns: ColumnDef<TableItem>[] = [
   {
-    id: "index",
-    header: "STT",
-    cell: ({ row }) => <div>{row.index + 1}</div>,
+    accessorKey: "number",
+    header: "Số bàn",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("number")}</div>
+    ),
+    filterFn: (rows, columnId, filterValue) => {
+      if (!filterValue) return true;
+      return String(filterValue) === String(rows.getValue("number"));
+    },
   },
   {
     accessorKey: "_id",
     header: "ID",
   },
   {
-    accessorKey: "image",
-    header: "Ảnh",
+    accessorKey: "capacity",
+    header: "Sức chứa",
     cell: ({ row }) => (
-      <div>
-        <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("image")} />
-          <AvatarFallback className="rounded-none">
-            {row.original.name}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: "Tên",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "price",
-    header: "Giá cả",
-    cell: ({ row }) => (
-      <div className="capitalize">{formatCurrency(row.getValue("price"))}</div>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Mô tả",
-    cell: ({ row }) => (
-      <div
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(row.getValue("description")),
-        }}
-        className="whitespace-pre-line"
-      />
+      <div className="capitalize">{row.getValue("capacity")}</div>
     ),
   },
   {
     accessorKey: "status",
     header: "Trạng thái",
     cell: ({ row }) => (
-      <div>{getVietnameseDishStatus(row.getValue("status"))}</div>
+      <div>{getVietnameseTableStatus(row.getValue("status"))}</div>
     ),
+  },
+  {
+    accessorKey: "token",
+    header: "Token",
+    cell: ({ row }) => <div>{row.getValue("token")}</div>,
   },
   {
     id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setDishIdEdit, setDishDelete } = useContext(DishTableContext);
-      const openEditDish = () => {
-        setDishIdEdit(row.original._id);
+      const { setTableIdEdit, setTableDelete } = useContext(TableTableContext);
+      const openEditTable = () => {
+        setTableIdEdit(row.original._id);
       };
 
-      const openDeleteDish = () => {
-        setDishDelete(row.original);
+      const openDeleteTable = () => {
+        setTableDelete(row.original);
       };
       return (
         <DropdownMenu modal={false}>
@@ -150,8 +124,8 @@ export const columns: ColumnDef<DishItem>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={openEditDish}>Sửa</DropdownMenuItem>
-            <DropdownMenuItem onClick={openDeleteDish}>Xóa</DropdownMenuItem>
+            <DropdownMenuItem onClick={openEditTable}>Sửa</DropdownMenuItem>
+            <DropdownMenuItem onClick={openDeleteTable}>Xóa</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -159,19 +133,19 @@ export const columns: ColumnDef<DishItem>[] = [
   },
 ];
 
-function AlertDialogDeleteDish({
-  dishDelete,
-  setDishDelete,
+function AlertDialogDeleteTable({
+  tableDelete,
+  setTableDelete,
 }: {
-  dishDelete: DishItem | null;
-  setDishDelete: (value: DishItem | null) => void;
+  tableDelete: TableItem | null;
+  setTableDelete: (value: TableItem | null) => void;
 }) {
-  const { mutateAsync } = useDeleteDishMutation();
-  const deleteDish = async () => {
-    if (dishDelete) {
+  const { mutateAsync } = useDeleteTableMutation();
+  const deleteTable = async () => {
+    if (tableDelete) {
       try {
-        const result = await mutateAsync(dishDelete._id);
-        setDishDelete(null);
+        const result = await mutateAsync(tableDelete._id);
+        setTableDelete(null);
         toast("Thành công", {
           description: result.payload.message,
         });
@@ -184,42 +158,41 @@ function AlertDialogDeleteDish({
   };
   return (
     <AlertDialog
-      open={Boolean(dishDelete)}
+      open={Boolean(tableDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setDishDelete(null);
+          setTableDelete(null);
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
+          <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Món{" "}
+            Bàn{" "}
             <span className="bg-foreground text-primary-foreground rounded px-1">
-              {dishDelete?.name}
+              {tableDelete?.number}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={deleteDish}>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={deleteTable}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
-
 const PAGE_SIZE = 10;
-export default function DishTable() {
+export default function TableTable() {
   const searchParam = useSearchParams();
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
-  const [dishIdEdit, setDishIdEdit] = useState<string | undefined>();
-  const [dishDelete, setDishDelete] = useState<DishItem | null>(null);
-  const dishListQuery = useDishListQuery();
-  const data = dishListQuery.data?.payload.data ?? [];
+  const [tableIdEdit, setTableIdEdit] = useState<string | undefined>();
+  const [tableDelete, setTableDelete] = useState<TableItem | null>(null);
+  const tableListQuery = useTableListQuery();
+  const data = tableListQuery.data?.payload.data ?? [];
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -259,26 +232,28 @@ export default function DishTable() {
   }, [table, pageIndex]);
 
   return (
-    <DishTableContext.Provider
-      value={{ dishIdEdit, setDishIdEdit, dishDelete, setDishDelete }}
+    <TableTableContext.Provider
+      value={{ tableIdEdit, setTableIdEdit, tableDelete, setTableDelete }}
     >
       <div className="w-full">
-        <EditDish id={dishIdEdit} setId={setDishIdEdit} />
-        <AlertDialogDeleteDish
-          dishDelete={dishDelete}
-          setDishDelete={setDishDelete}
+        <EditTable id={tableIdEdit} setId={setTableIdEdit} />
+        <AlertDialogDeleteTable
+          tableDelete={tableDelete}
+          setTableDelete={setTableDelete}
         />
         <div className="flex items-center py-4">
           <Input
-            placeholder="Lọc tên..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            placeholder="Lọc số bàn"
+            value={
+              (table.getColumn("number")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn("number")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
           <div className="ml-auto flex items-center gap-2">
-            <AddDish />
+            <AddTable />
           </div>
         </div>
         <div className="rounded-md border">
@@ -341,11 +316,11 @@ export default function DishTable() {
             <AutoPagination
               page={table.getState().pagination.pageIndex + 1}
               pageSize={table.getPageCount()}
-              pathname="/manage/dishes"
+              pathname="/manage/tables"
             />
           </div>
         </div>
       </div>
-    </DishTableContext.Provider>
+    </TableTableContext.Provider>
   );
 }

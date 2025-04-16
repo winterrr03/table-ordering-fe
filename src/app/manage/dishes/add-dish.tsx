@@ -40,6 +40,7 @@ import { useAddDishMutation } from "@/queries/useDish";
 import { useUploadMediaMutation } from "@/queries/useMedia";
 import { toast } from "sonner";
 import envConfig from "@/config";
+import revalidateApiRequest from "@/apiRequests/revalidate";
 
 export default function AddDish() {
   const [file, setFile] = useState<File | null>(null);
@@ -88,6 +89,7 @@ export default function AddDish() {
         };
       }
       const result = await addDishMutation.mutateAsync(body);
+      await revalidateApiRequest("dishes");
       toast("Thành công", {
         description: result.payload.message,
       });
@@ -240,6 +242,7 @@ export default function AddDish() {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
