@@ -2,6 +2,7 @@ import envConfig from "@/config";
 import {
   getAccessTokenFromLocalStorage,
   normalizePath,
+  removeGuestSessionIdFromLocalStorage,
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
   setRefreshTokenToLocalStorage,
@@ -133,6 +134,7 @@ const request = async <Response>(
           } catch (error) {
           } finally {
             removeTokensFromLocalStorage();
+            removeGuestSessionIdFromLocalStorage();
             clientLogoutRequest = null;
             location.href = "/login";
           }
@@ -157,6 +159,7 @@ const request = async <Response>(
       ["api/auth/logout", "api/guests/auth/logout"].includes(normalizeUrl)
     ) {
       removeTokensFromLocalStorage();
+      removeGuestSessionIdFromLocalStorage();
     }
   }
   return data;

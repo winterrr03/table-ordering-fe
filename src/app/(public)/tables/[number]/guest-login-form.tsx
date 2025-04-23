@@ -14,10 +14,14 @@ import { useAppContext } from "@/components/app-provider";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useGuestLoginMutation } from "@/queries/useGuest";
 import { useEffect } from "react";
-import { handleErrorApi } from "@/lib/utils";
+import {
+  generateSocketInstace,
+  handleErrorApi,
+  setGuestSessionIdToLocalStorage,
+} from "@/lib/utils";
 
 export default function GuestLoginForm() {
-  const { setRole } = useAppContext();
+  const { setRole, setSocket } = useAppContext();
   const searchParams = useSearchParams();
   const params = useParams();
   const tableNumber = Number(params.number);
@@ -44,6 +48,8 @@ export default function GuestLoginForm() {
     try {
       const result = await loginMutation.mutateAsync(values);
       setRole(result.payload.data.guest.role);
+      setGuestSessionIdToLocalStorage(result.payload.data.guestSession._id);
+      setSocket(generateSocketInstace(result.payload.data.accessToken));
       router.push("/guests/menu");
     } catch (error) {
       handleErrorApi({
