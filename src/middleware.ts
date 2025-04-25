@@ -10,6 +10,7 @@ const decodeToken = (token: string) => {
 
 const managePaths = ["/manage"];
 const guestPaths = ["/guests"];
+const onlyOwnerPaths = ["/manage/accounts", "/manage/analytics"];
 const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
@@ -47,7 +48,15 @@ export function middleware(request: NextRequest) {
       role !== Role.Guest &&
       guestPaths.some((path) => pathname.startsWith(path));
 
-    if (isGuestGoToManagePath || isNotGuestGoToGuestPath) {
+    const isNotOwnerGoToOwnerPath =
+      role !== Role.Owner &&
+      onlyOwnerPaths.some((path) => pathname.startsWith(path));
+
+    if (
+      isGuestGoToManagePath ||
+      isNotGuestGoToGuestPath ||
+      isNotOwnerGoToOwnerPath
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
