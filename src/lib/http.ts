@@ -3,6 +3,7 @@ import {
   getAccessTokenFromLocalStorage,
   normalizePath,
   removeGuestSessionIdFromLocalStorage,
+  removeHasRatedFeedbackFromLocalStorage,
   removeTokensFromLocalStorage,
   setAccessTokenToLocalStorage,
   setRefreshTokenToLocalStorage,
@@ -135,6 +136,7 @@ const request = async <Response>(
           } finally {
             removeTokensFromLocalStorage();
             removeGuestSessionIdFromLocalStorage();
+            removeHasRatedFeedbackFromLocalStorage();
             clientLogoutRequest = null;
             location.href = "/login";
           }
@@ -167,6 +169,7 @@ const request = async <Response>(
     ) {
       removeTokensFromLocalStorage();
       removeGuestSessionIdFromLocalStorage();
+      removeHasRatedFeedbackFromLocalStorage();
     }
   }
   return data;

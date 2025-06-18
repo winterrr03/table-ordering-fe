@@ -25,3 +25,16 @@ export const useGuestGetOrderListQuery = (id: string) => {
     queryFn: () => guestApiRequest.getOrderList(id),
   });
 };
+
+export const useGuestInfoQuery = () => {
+  return useQuery({
+    queryKey: ["guest-info"],
+    queryFn: () => guestApiRequest.getGuestInfo(),
+  });
+};
+
+export const useGuestFeedbackMutation = () => {
+  return useMutation({
+    mutationFn: guestApiRequest.feedback,
+  });
+};

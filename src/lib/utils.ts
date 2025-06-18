@@ -35,6 +35,17 @@ export const setAccessTokenToLocalStorage = (value: string) =>
 export const setRefreshTokenToLocalStorage = (value: string) =>
   isBrowser && localStorage.setItem("refreshToken", value);
 
+export const setHasRatedFeedbackToLocalStorage = (value: boolean) =>
+  isBrowser && localStorage.setItem("hasRatedFeedback", JSON.stringify(value));
+
+export const getHasRatedFeedbackFromLocalStorage = () =>
+  isBrowser
+    ? JSON.parse(localStorage.getItem("hasRatedFeedback") || "false")
+    : false;
+
+export const removeHasRatedFeedbackFromLocalStorage = () =>
+  isBrowser && localStorage.removeItem("hasRatedFeedback");
+
 export const removeTokensFromLocalStorage = () => {
   isBrowser && localStorage.removeItem("accessToken");
   isBrowser && localStorage.removeItem("refreshToken");

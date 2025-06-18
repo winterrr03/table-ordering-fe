@@ -1,3 +1,4 @@
+import envConfig from "@/config";
 import http from "@/lib/http";
 import {
   LogoutBodyType,
@@ -7,7 +8,10 @@ import {
 import {
   GuestCreateOrdersBodyType,
   GuestCreateOrdersResType,
+  GuestFeedbackBodyType,
+  GuestFeedbackResType,
   GuestGetOrdersResType,
+  GuestInfoResType,
   GuestLoginBodyType,
   GuestLoginResType,
 } from "@/schemaValidations/guest.schema";
@@ -61,6 +65,11 @@ const guestApiRequest = {
     http.post<GuestCreateOrdersResType>("/guests/orders", body),
   getOrderList: (guest_session_id: string) =>
     http.get<GuestGetOrdersResType>(`/guests/orders/${guest_session_id}`),
+  getGuestInfo: () => http.get<GuestInfoResType>(`/guests/info`),
+  feedback: (body: GuestFeedbackBodyType) =>
+    http.post<GuestFeedbackResType>("/predict/feedback", body, {
+      baseUrl: envConfig.NEXT_PUBLIC_AI_ENDPOINT,
+    }),
 };
 
 export default guestApiRequest;

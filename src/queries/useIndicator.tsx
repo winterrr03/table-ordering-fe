@@ -10,3 +10,17 @@ export const useDashboardIndicator = (
     queryKey: ["dashboardIndicators", queryParams],
   });
 };
+
+export const useAnalyticsIndicator = () => {
+  return useQuery({
+    queryKey: ["analyticsIndicators"],
+    queryFn: indicatorApiRequest.getAnalyticsIndicators,
+  });
+};
+
+export const useReviewsIndicator = () => {
+  return useQuery({
+    queryKey: ["reviewsIndicators"],
+    queryFn: indicatorApiRequest.getReviewsIndicators,
+  });
+};
