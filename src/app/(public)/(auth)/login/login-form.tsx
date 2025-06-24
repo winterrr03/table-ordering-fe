@@ -127,11 +127,11 @@ export default function LoginForm() {
               <Button type="submit" className="w-full">
                 Đăng nhập
               </Button>
-              <Link href={googleOauthUrl}>
+              {/* <Link href={googleOauthUrl}>
                 <Button variant="outline" className="w-full" type="button">
                   Đăng nhập bằng Google
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </form>
         </Form>

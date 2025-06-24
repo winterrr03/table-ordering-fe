@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   formatCurrency,
+  getTypeDish,
   getVietnameseDishStatus,
   handleErrorApi,
 } from "@/lib/utils";
@@ -119,6 +120,11 @@ export const columns: ColumnDef<DishItem>[] = [
         className="whitespace-pre-line"
       />
     ),
+  },
+  {
+    accessorKey: "type",
+    header: "Loại",
+    cell: ({ row }) => <div>{getTypeDish(row.getValue("type"))}</div>,
   },
   {
     accessorKey: "status",

@@ -8,12 +8,14 @@ import {
 import {
   GuestCreateOrdersBodyType,
   GuestCreateOrdersResType,
+  GuestCreatePaymentLinkBodyType,
   GuestFeedbackBodyType,
   GuestFeedbackResType,
   GuestGetOrdersResType,
   GuestInfoResType,
   GuestLoginBodyType,
   GuestLoginResType,
+  GuestPaymentLinkResType,
 } from "@/schemaValidations/guest.schema";
 
 const guestApiRequest = {
@@ -70,6 +72,8 @@ const guestApiRequest = {
     http.post<GuestFeedbackResType>("/predict/feedback", body, {
       baseUrl: envConfig.NEXT_PUBLIC_AI_ENDPOINT,
     }),
+  guestCreatePaymentLink: (body: GuestCreatePaymentLinkBodyType) =>
+    http.post<GuestPaymentLinkResType>("/guests/payment-link", body),
 };
 
 export default guestApiRequest;

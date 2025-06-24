@@ -60,6 +60,15 @@ export const setGuestSessionIdToLocalStorage = (value: string) =>
 export const removeGuestSessionIdFromLocalStorage = () =>
   isBrowser && localStorage.removeItem("guestSessionId");
 
+export const getLastVisitedUrlFromLocalStorage = () =>
+  isBrowser ? localStorage.getItem("lastVisitedUrl") : null;
+
+export const setLastVisitedUrlToLocalStorage = (value: string) =>
+  isBrowser && localStorage.setItem("lastVisitedUrl", value);
+
+export const removeLastVisitedUrlFromLocalStorage = () =>
+  isBrowser && localStorage.removeItem("lastVisitedUrl");
+
 export const handleErrorApi = ({
   error,
   setError,
@@ -136,6 +145,17 @@ export const getVietnameseDishStatus = (
       return "Không có sẵn";
     default:
       return "Ẩn";
+  }
+};
+
+export const getTypeDish = (type: string) => {
+  switch (type) {
+    case "Food":
+      return "Đồ ăn";
+    case "Drink":
+      return "Thức uống";
+    default:
+      return "Không";
   }
 };
 

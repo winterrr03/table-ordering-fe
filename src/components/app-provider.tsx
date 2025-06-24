@@ -81,7 +81,7 @@ export default function AppProvider({
         {children}
         <RefreshToken />
         <ListenLogoutSocket />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
     </AppContext.Provider>
   );

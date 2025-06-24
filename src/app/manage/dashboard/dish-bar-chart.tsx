@@ -64,7 +64,7 @@ export function DishBarChart({
 }) {
   const chartDateColors = useMemo(
     () =>
-      chartData.map((data, index) => {
+      chartData.slice(0, 5).map((data, index) => {
         return {
           ...data,
           fill: colors[index] ?? colors[colors.length - 1],

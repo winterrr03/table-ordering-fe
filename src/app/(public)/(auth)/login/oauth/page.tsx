@@ -4,10 +4,10 @@ import { useAppContext } from "@/components/app-provider";
 import { decodeToken, generateSocketInstace } from "@/lib/utils";
 import { useSetTokenToCookieMutation } from "@/queries/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-export default function OAuthPage() {
+export function OAuthHandler() {
   const { mutateAsync } = useSetTokenToCookieMutation();
   const router = useRouter();
   const count = useRef(0);
@@ -53,4 +53,10 @@ export default function OAuthPage() {
     mutateAsync,
   ]);
   return null;
+}
+
+export default function OAuthPage() {
+  <Suspense fallback={<div>Loading...</div>}>
+    <OAuthHandler />
+  </Suspense>;
 }

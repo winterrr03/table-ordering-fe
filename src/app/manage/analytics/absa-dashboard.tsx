@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -123,7 +122,7 @@ const SentimentBadges = ({ aspects }: { aspects: AspectSentiment[] }) => {
   );
 };
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 5;
 
 export function ABSADashboard() {
   const [page, setPage] = useState(1);

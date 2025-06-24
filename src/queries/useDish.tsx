@@ -1,11 +1,23 @@
 import dishApiRequest from "@/apiRequests/dish";
-import { UpdateDishBodyType } from "@/schemaValidations/dish.schema";
+import {
+  DishListWithPaginationQueryType,
+  UpdateDishBodyType,
+} from "@/schemaValidations/dish.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useDishListQuery = () => {
   return useQuery({
     queryKey: ["dishes"],
     queryFn: dishApiRequest.list,
+  });
+};
+
+export const useDishListFilterQuery = (
+  queryParams: DishListWithPaginationQueryType
+) => {
+  return useQuery({
+    queryFn: () => dishApiRequest.listFilter(queryParams),
+    queryKey: ["dishesFilter", queryParams],
   });
 };
 

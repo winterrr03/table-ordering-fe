@@ -38,3 +38,9 @@ export const useGuestFeedbackMutation = () => {
     mutationFn: guestApiRequest.feedback,
   });
 };
+
+export const useGuestCreatePaymentLinkMutation = () => {
+  return useMutation({
+    mutationFn: guestApiRequest.guestCreatePaymentLink,
+  });
+};

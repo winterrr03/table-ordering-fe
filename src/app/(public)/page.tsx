@@ -1,23 +1,14 @@
+"use client";
+
 import dishApiRequest from "@/apiRequests/dish";
 import { formatCurrency } from "@/lib/utils";
+import { useDishListQuery } from "@/queries/useDish";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import Image from "next/image";
 
 export default async function Home() {
-  let dishList: DishListResType["data"] = [];
-  try {
-    const result = await dishApiRequest.list();
-    const {
-      payload: { data },
-    } = result;
-    dishList = data;
-  } catch (error) {
-    return (
-      <div className="text-destructive text-center py-8">
-        Có lỗi xảy ra. Vui lòng thử lại sau.
-      </div>
-    );
-  }
+  const dishListQuery = useDishListQuery();
+  const dishList = dishListQuery.data?.payload.data ?? [];
 
   return (
     <div className="flex flex-col min-h-screen">

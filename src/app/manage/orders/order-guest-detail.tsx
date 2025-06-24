@@ -39,6 +39,32 @@ export default function OrderGuestDetail({
     ? orders.filter((order) => order.status === OrderStatus.Paid)
     : [];
 
+  const calcTotals = (list: Orders) => {
+    return list.reduce(
+      (acc, order) => {
+        const price = order.dish_snapshot.price;
+        const discount = order.discount ?? 0;
+        const subtotal = price * order.quantity;
+
+        acc.before += subtotal;
+        acc.saved += subtotal * discount;
+        acc.after += subtotal * (1 - discount);
+        return acc;
+      },
+      { before: 0, saved: 0, after: 0 }
+    );
+  };
+
+  const totalsUnpaid = calcTotals(ordersFilterToPurchase);
+  const totalsPaid = calcTotals(purchasedOrderFilter);
+
+  const isAllPaid = ordersFilterToPurchase.length === 0;
+  const showing = isAllPaid ? totalsPaid : totalsUnpaid;
+  const activeOrders = isAllPaid
+    ? purchasedOrderFilter
+    : ordersFilterToPurchase;
+  const discountPercent = Math.round((activeOrders[0]?.discount ?? 0) * 100);
+
   const payForGuestMutation = usePayForGuestMutation();
 
   const pay = async () => {
@@ -143,28 +169,25 @@ export default function OrderGuestDetail({
       </div>
 
       <div className="space-x-1">
-        <span className="font-semibold">Chưa thanh toán:</span>
-        <Badge>
-          <span>
-            {formatCurrency(
-              ordersFilterToPurchase.reduce((acc, order) => {
-                return acc + order.quantity * order.dish_snapshot.price;
-              }, 0)
-            )}
-          </span>
-        </Badge>
+        <span className="font-semibold">Tạm tính:</span>
+        <Badge variant="outline">{formatCurrency(showing.before)}</Badge>
       </div>
+
       <div className="space-x-1">
-        <span className="font-semibold">Đã thanh toán:</span>
-        <Badge variant={"outline"}>
-          <span>
-            {formatCurrency(
-              purchasedOrderFilter.reduce((acc, order) => {
-                return acc + order.quantity * order.dish_snapshot.price;
-              }, 0)
-            )}
-          </span>
-        </Badge>
+        <span className="font-semibold">Giảm giá ({discountPercent}%):</span>
+        <Badge variant="outline">-{formatCurrency(showing.saved)}</Badge>
+      </div>
+
+      <div className="space-x-1">
+        <span className="font-semibold">Tổng cộng:</span>
+        <Badge>{formatCurrency(showing.after)}</Badge>
+      </div>
+
+      <div className="space-x-1">
+        <span className="font-semibold">
+          {isAllPaid ? "Đã thanh toán:" : "Cần thanh toán:"}
+        </span>
+        <Badge>{formatCurrency(showing.after)}</Badge>
       </div>
 
       <div>
@@ -175,7 +198,7 @@ export default function OrderGuestDetail({
           disabled={ordersFilterToPurchase.length === 0}
           onClick={pay}
         >
-          Thanh toán tất cả ({ordersFilterToPurchase.length} đơn)
+          Thanh toán tất cả
         </Button>
       </div>
     </div>

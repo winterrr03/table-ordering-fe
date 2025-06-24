@@ -50,7 +50,10 @@ import {
 } from "@/components/ui/popover";
 import { endOfDay, format, startOfDay } from "date-fns";
 import TableSkeleton from "@/app/manage/orders/table-skeleton";
-import { GuestCreateOrdersResType } from "@/schemaValidations/guest.schema";
+import {
+  GuestCreateOrdersResType,
+  GuestReceiveHookDataResType,
+} from "@/schemaValidations/guest.schema";
 import {
   useGetOrderListQuery,
   useUpdateOrderMutation,
@@ -222,11 +225,22 @@ export default function OrderTable() {
       refetch();
     }
 
+    function onPaymentOnline(data: GuestReceiveHookDataResType["data"]) {
+      if (data.status === "success") {
+        const { guest_session } = data.orders[0];
+        toast("Thành công", {
+          description: `${guest_session?.guest.phone} tại bàn ${guest_session?.guest.phone} thanh toán thành công ${data.orders.length} đơn`,
+        });
+      }
+      refetch();
+    }
+
     socket?.on("connect", onConnect);
     socket?.on("disconnect", onDisconnect);
     socket?.on("update-order", onUpdateOrder);
     socket?.on("new-order", onNewOrder);
     socket?.on("payment", onPayment);
+    socket?.on("payment-online", onPaymentOnline);
 
     return () => {
       socket?.off("connect", onConnect);
@@ -234,6 +248,7 @@ export default function OrderTable() {
       socket?.off("update-order", onUpdateOrder);
       socket?.off("new-order", onNewOrder);
       socket?.off("payment", onPayment);
+      socket?.off("payment-online", onPaymentOnline);
     };
   }, [refetchOrderList, fromDate, toDate, socket]);
 

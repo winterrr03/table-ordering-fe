@@ -27,7 +27,7 @@ import {
   CreateDishBody,
   CreateDishBodyType,
 } from "@/schemaValidations/dish.schema";
-import { DishStatus, DishStatusValues } from "@/constants/types";
+import { DishStatus, DishStatusValues, DishType } from "@/constants/types";
 import {
   Select,
   SelectContent,
@@ -55,6 +55,7 @@ export default function AddDish() {
       price: 0,
       description: "",
       image: undefined,
+      type: DishType.Food,
       status: DishStatus.Hidden,
     },
   });
@@ -227,6 +228,40 @@ export default function AddDish() {
                         />
                         <FormMessage />
                       </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
+                      <Label htmlFor="description">Loại</Label>
+                      <div className="col-span-3 w-full space-y-2">
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn loại" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem key="Food" value="Food">
+                              Đồ ăn
+                            </SelectItem>
+                            <SelectItem key="Drink" value="Drink">
+                              Thức uống
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <FormMessage />
                     </div>
                   </FormItem>
                 )}

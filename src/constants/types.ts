@@ -25,6 +25,13 @@ export const DishStatusValues = [
   DishStatus.Hidden,
 ] as const;
 
+export const DishType = {
+  Food: "Food",
+  Drink: "Drink",
+} as const;
+
+export const DishTypeValues = [DishType.Food, DishType.Drink] as const;
+
 export const TableStatus = {
   Available: "Available",
   Hidden: "Hidden",

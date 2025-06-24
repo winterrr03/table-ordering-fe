@@ -22,7 +22,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getVietnameseDishStatus, handleErrorApi } from "@/lib/utils";
+import {
+  getTypeDish,
+  getVietnameseDishStatus,
+  handleErrorApi,
+} from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -34,7 +38,12 @@ import {
   UpdateDishBody,
   UpdateDishBodyType,
 } from "@/schemaValidations/dish.schema";
-import { DishStatus, DishStatusValues } from "@/constants/types";
+import {
+  DishStatus,
+  DishStatusValues,
+  DishType,
+  DishTypeValues,
+} from "@/constants/types";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetDishQuery, useUpdateDishMutation } from "@/queries/useDish";
 import { useUploadMediaMutation } from "@/queries/useMedia";
@@ -65,6 +74,7 @@ export default function EditDish({
       price: 0,
       description: "",
       image: undefined,
+      type: DishType.Drink,
       status: DishStatus.Hidden,
     },
   });
@@ -79,12 +89,14 @@ export default function EditDish({
 
   useEffect(() => {
     if (data) {
-      const { name, price, description, image, status } = data.payload.data;
+      const { name, price, description, image, type, status } =
+        data.payload.data;
       form.reset({
         name,
         price,
         description,
         image: image ?? undefined,
+        type,
         status,
       });
     }
@@ -239,6 +251,39 @@ export default function EditDish({
                         />
                         <FormMessage />
                       </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
+                      <Label htmlFor="description">Loại</Label>
+                      <div className="col-span-3 w-full space-y-2">
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn loại" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {DishTypeValues.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {getTypeDish(type)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <FormMessage />
                     </div>
                   </FormItem>
                 )}

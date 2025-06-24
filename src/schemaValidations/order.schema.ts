@@ -27,6 +27,7 @@ export const OrderSchema = z.object({
   dish_snapshot_id: z.string(),
   dish_snapshot: DishSnapshotSchema,
   quantity: z.number(),
+  discount: z.number(),
   order_handler_id: z.string().nullable(),
   order_handler: AccountSchema.nullable(),
   status: z.enum(OrderStatusValues),
@@ -47,6 +48,7 @@ export const CreateOrdersBody = z
       z.object({
         dish_id: z.string(),
         quantity: z.number(),
+        discount: z.number(),
       })
     ),
   })

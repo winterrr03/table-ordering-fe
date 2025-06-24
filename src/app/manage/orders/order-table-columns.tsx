@@ -174,7 +174,11 @@ const orderTableColumns: ColumnDef<OrderItem>[] = [
           </SelectTrigger>
           <SelectContent>
             {OrderStatusValues.map((status) => (
-              <SelectItem key={status} value={status}>
+              <SelectItem
+                key={status}
+                value={status}
+                disabled={status === OrderStatus.Paid}
+              >
                 {getVietnameseOrderStatus(status)}
               </SelectItem>
             ))}

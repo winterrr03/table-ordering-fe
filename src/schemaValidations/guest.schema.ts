@@ -48,6 +48,7 @@ export const GuestCreateOrdersBody = z.object({
     z.object({
       dish_id: z.string(),
       quantity: z.number(),
+      discount: z.number(),
     })
   ),
 });
@@ -96,3 +97,38 @@ export const GuestFeedbackRes = z.object({
 });
 
 export type GuestFeedbackResType = z.TypeOf<typeof GuestFeedbackRes>;
+
+export const GuestCreatePaymentLinkBody = z
+  .object({
+    orderCode: z.number(),
+    amount: z.number(),
+    description: z.string(),
+    returnUrl: z.string(),
+    cancelUrl: z.string(),
+  })
+  .strict();
+
+export type GuestCreatePaymentLinkBodyType = z.TypeOf<
+  typeof GuestCreatePaymentLinkBody
+>;
+
+export const GuestPaymentLinkRes = z.object({
+  data: z.object({
+    checkoutUrl: z.string(),
+  }),
+  message: z.string(),
+});
+
+export type GuestPaymentLinkResType = z.TypeOf<typeof GuestPaymentLinkRes>;
+
+export const GuestReceiveHookDataRes = z.object({
+  message: z.string(),
+  data: z.object({
+    orders: z.array(OrderSchema),
+    status: z.string(),
+  }),
+});
+
+export type GuestReceiveHookDataResType = z.infer<
+  typeof GuestReceiveHookDataRes
+>;

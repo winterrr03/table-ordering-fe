@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import envConfig from "@/config";
 import { OrderStatus } from "@/constants/types";
 import {
   decodeToken,
@@ -27,9 +28,11 @@ import {
   setHasRatedFeedbackToLocalStorage,
 } from "@/lib/utils";
 import {
+  useGuestCreatePaymentLinkMutation,
   useGuestFeedbackMutation,
   useGuestGetOrderListQuery,
 } from "@/queries/useGuest";
+import { GuestReceiveHookDataResType } from "@/schemaValidations/guest.schema";
 import {
   PayGuestOrdersResType,
   UpdateOrderResType,
@@ -38,7 +41,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -53,11 +56,14 @@ export default function OrdersCart() {
   const guestFeedbackMutation = useGuestFeedbackMutation();
   const [feedback, setFeedback] = useState("");
   const [open, setOpen] = useState(false);
+  const searchParams = useSearchParams();
   const [hasRated, setHasRated] = useState(
     getHasRatedFeedbackFromLocalStorage()
   );
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const createPaymentLinkMutation = useGuestCreatePaymentLinkMutation();
 
   const { waitingForPaying, paid } = useMemo(() => {
     return orders.reduce(
@@ -102,8 +108,23 @@ export default function OrdersCart() {
     );
   }, [orders]);
 
-  const allOrdersPaid =
-    waitingForPaying.quantity === 0 && paid.quantity > 0 && !hasRated;
+  const discountPercent = useMemo(() => {
+    const discount = orders.find((order) => order.discount > 0)?.discount ?? 0;
+    return discount;
+  }, [orders]);
+
+  const allOrdersPaid = waitingForPaying.quantity === 0 && paid.quantity > 0;
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (!status) return;
+
+    if (status === "CANCEL") {
+      toast.error("Thất bại", {
+        description: "Thanh toán không thành công",
+      });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (socket?.connected) {
@@ -139,16 +160,28 @@ export default function OrdersCart() {
       refetch();
     }
 
+    function onPaymentOnline(data: GuestReceiveHookDataResType["data"]) {
+      if (data.status === "success") {
+        const { guest_session } = data.orders[0];
+        toast("Thành công", {
+          description: `${guest_session?.guest.phone} tại bàn ${guest_session?.guest.phone} thanh toán thành công ${data.orders.length} đơn`,
+        });
+      }
+      refetch();
+    }
+
     socket?.on("connect", onConnect);
     socket?.on("disconnect", onDisconnect);
     socket?.on("update-order", onUpdateOrder);
     socket?.on("payment", onPayment);
+    socket?.on("payment-online", onPaymentOnline);
 
     return () => {
       socket?.off("connect", onConnect);
       socket?.off("disconnect", onDisconnect);
       socket?.off("update-order", onUpdateOrder);
       socket?.off("payment", onPayment);
+      socket?.off("payment-online", onPaymentOnline);
     };
   }, [refetch, socket]);
 
@@ -195,12 +228,31 @@ export default function OrdersCart() {
     }
   };
 
+  const handlePayment = async () => {
+    if (createPaymentLinkMutation.isPending) return;
+    try {
+      // const amount = waitingForPaying.price * (1 - discountPercent);
+      const amount = 2000;
+      const orderCode = Date.now();
+      const res = await createPaymentLinkMutation.mutateAsync({
+        orderCode,
+        amount,
+        description: `${guest_session_id}`,
+        returnUrl: `${envConfig.NEXT_PUBLIC_URL}/guests/orders?status=PAID`,
+        cancelUrl: `${envConfig.NEXT_PUBLIC_URL}/guests/orders?status=CANCEL`,
+      });
+      router.push(res.payload.data.checkoutUrl);
+    } catch (error) {
+      handleErrorApi({ error });
+    }
+  };
+
   return (
     <>
-      {allOrdersPaid && (
+      {allOrdersPaid && !hasRated && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="fixed bottom-20 right-4 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-full shadow-lg">
+            <Button className="fixed bottom-6 right-6 z-10 bg-[#0f172b] hover:bg-[#1e293b] text-white shadow-xl px-4 py-2 rounded-full">
               Gửi đánh giá
             </Button>
           </DialogTrigger>
@@ -232,6 +284,18 @@ export default function OrdersCart() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      )}
+
+      {!allOrdersPaid && (
+        <Button
+          onClick={handlePayment}
+          className="fixed bottom-20 right-6 z-10 bg-[#0f172b] hover:bg-[#1e293b] text-white shadow-xl px-4 py-2 rounded-full"
+          disabled={createPaymentLinkMutation.isPending}
+        >
+          {createPaymentLinkMutation.isPending
+            ? "Đang xử lý..."
+            : "Thanh toán ngay"}
+        </Button>
       )}
 
       <div className="space-y-4 pb-32">
@@ -287,37 +351,39 @@ export default function OrdersCart() {
           ))
         )}
 
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-md">
-          <div className="max-w-[500px] mx-auto p-4 space-y-3">
-            {paid.quantity > 0 && (
-              <div className="flex justify-between items-center p-2 rounded-md bg-green-200 dark:bg-green-900">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-700 dark:text-green-300" />
-                  <span className="font-semibold text-green-950 dark:text-white">
-                    Đơn đã thanh toán · {paid.quantity} món
-                  </span>
-                </div>
-                <span className="font-bold text-green-950 dark:text-white">
-                  {formatCurrency(paid.price)}
-                </span>
-              </div>
-            )}
+        {waitingForPaying.price > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-md">
+            <div className="max-w-[500px] mx-auto p-4 space-y-3">
+              {(paid.quantity > 0 || waitingForPaying.quantity > 0) && (
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-300">
+                      Tạm tính:
+                    </span>
+                    <span>{formatCurrency(waitingForPaying.price)}</span>
+                  </div>
 
-            {waitingForPaying.quantity > 0 && (
-              <div className="flex justify-between items-center p-2 rounded-md bg-amber-200 dark:bg-amber-900">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-amber-700 dark:text-amber-300" />
-                  <span className="font-semibold text-amber-950 dark:text-white">
-                    Đơn chưa thanh toán · {waitingForPaying.quantity} món
-                  </span>
+                  <div className="flex justify-between">
+                    <span>Giảm giá {discountPercent * 100}%:</span>
+                    <span>
+                      -
+                      {formatCurrency(waitingForPaying.price * discountPercent)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between font-semibold">
+                    <span>Tổng cộng:</span>
+                    <span>
+                      {formatCurrency(
+                        waitingForPaying.price * (1 - discountPercent)
+                      )}
+                    </span>
+                  </div>
                 </div>
-                <span className="font-bold text-amber-950 dark:text-white">
-                  {formatCurrency(waitingForPaying.price)}
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

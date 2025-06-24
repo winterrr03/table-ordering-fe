@@ -2,7 +2,11 @@
 
 import { useAppContext } from "@/components/app-provider";
 import { Role } from "@/constants/types";
-import { cn, handleErrorApi } from "@/lib/utils";
+import {
+  cn,
+  getLastVisitedUrlFromLocalStorage,
+  handleErrorApi,
+} from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/useAuth";
 import { RoleType } from "@/types/jwt.types";
 import Link from "next/link";
@@ -59,14 +63,16 @@ export default function NavItems({ className }: { className?: string }) {
   const router = useRouter();
 
   const logout = async () => {
-    const mutation = role === Role.Guest ? logoutGuestMutation : logoutMutation;
-
+    const isGuest = role === Role.Guest;
+    const mutation = isGuest ? logoutGuestMutation : logoutMutation;
     if (mutation.isPending) return;
+
+    const lastUrl = isGuest ? getLastVisitedUrlFromLocalStorage() : null;
     try {
       await mutation.mutateAsync();
       setRole();
       disconnectSocket();
-      router.push("/");
+      router.push(lastUrl ?? "/");
     } catch (error: any) {
       handleErrorApi({
         error,

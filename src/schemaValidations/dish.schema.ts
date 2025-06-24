@@ -1,11 +1,12 @@
 import z from "zod";
-import { DishStatusValues } from "@/constants/types";
+import { DishStatusValues, DishTypeValues } from "@/constants/types";
 
 export const CreateDishBody = z.object({
   name: z.string().min(1).max(256),
   price: z.coerce.number().positive(),
   description: z.string().max(10000),
   image: z.string().url(),
+  type: z.enum(DishTypeValues).optional(),
   status: z.enum(DishStatusValues).optional(),
 });
 
@@ -17,6 +18,7 @@ export const DishSchema = z.object({
   price: z.coerce.number(),
   description: z.string(),
   image: z.string(),
+  type: z.enum(DishTypeValues),
   status: z.enum(DishStatusValues),
   created_at: z.date(),
   updated_at: z.date(),
@@ -47,7 +49,8 @@ export type DishParamsType = z.TypeOf<typeof DishParams>;
 
 export const DishListWithPaginationQuery = z.object({
   page: z.coerce.number().positive().lte(10000).default(1),
-  limit: z.coerce.number().positive().lte(10000).default(10),
+  limit: z.coerce.number().positive().lte(10000).default(100),
+  type: z.enum(DishTypeValues),
 });
 
 export type DishListWithPaginationQueryType = z.TypeOf<
@@ -76,6 +79,7 @@ export const DishSnapshotSchema = z.object({
   image: z.string(),
   description: z.string(),
   status: z.enum(DishStatusValues),
+  type: z.enum(DishTypeValues),
   dish_id: z.string().nullable(),
   created_at: z.date(),
   updated_at: z.date(),

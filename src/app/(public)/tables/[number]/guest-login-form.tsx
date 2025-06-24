@@ -18,6 +18,7 @@ import {
   generateSocketInstace,
   handleErrorApi,
   setGuestSessionIdToLocalStorage,
+  setLastVisitedUrlToLocalStorage,
 } from "@/lib/utils";
 
 export default function GuestLoginForm() {
@@ -49,6 +50,7 @@ export default function GuestLoginForm() {
       const result = await loginMutation.mutateAsync(values);
       setRole(result.payload.data.guest.role);
       setGuestSessionIdToLocalStorage(result.payload.data.guestSession._id);
+      setLastVisitedUrlToLocalStorage(window.location.href);
       setSocket(generateSocketInstace(result.payload.data.accessToken));
       router.push("/guests/menu");
     } catch (error) {
